@@ -3,7 +3,7 @@
 #include<Eigen/Dense>
 using namespace Eigen;
 using namespace std;  
-int main(int, char *[])
+int main()
 {
 	Matrix4d mat=MatrixXd::Random(4,4);
 	Vector4d u(1,2,3,4),ans;

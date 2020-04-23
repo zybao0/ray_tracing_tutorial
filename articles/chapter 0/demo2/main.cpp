@@ -35,7 +35,7 @@ void write_PNG()//输出图像
 	png_destroy_write_struct(&png_ptr,&info_ptr);
 	fclose(f);
 }
-int main(int, char *[])
+int main()
 {
 	for(int i=0;i<height;i++)
 	for(int j=0;j<width;j++)bitmap_rgb[i][j]=Vector3d((double)(i+1)/height,(double)(j+1)/width,0);
