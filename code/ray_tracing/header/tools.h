@@ -1,4 +1,4 @@
-//define vec(type_name) cnum(const_number)
+//define vec(type_name) cnum(const_number) rnd(random number)
 #pragma once
 
 #include<Eigen/Eigen>
@@ -22,9 +22,15 @@ namespace vec
 	using mat3=Eigen::Matrix<real,3,3>;
 	using mat4=Eigen::Matrix<real,4,4>;
 };
+
 namespace cnum//const_number
 {
 	const vec::real INF=0x3f3f3f3f;
 	const vec::real eps=1e-9;
 	const vec::real pi=acos(-1);
+};
+
+namespace rnd
+{
+	vec::real rand();
 };

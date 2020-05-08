@@ -1,21 +1,28 @@
 #include<png.h>
+#include<vector>
 #include<cstdio>
 #include<cstdlib>
 #include<iostream>
 #include<Eigen/Eigen>
 #include<Eigen/Dense>
 
-#include<core.h>
+#include<ray_tracing.h>
 using namespace Eigen;
 using namespace std;
 using namespace vec;
+using namespace cnum;
 using namespace ray_tracing;
+int ssp=50;//每像素采样的点数
+camera cam;//相机
+intersect* world;//场景
 const int width=400;//图像水平长度/像素
 const int height=200;//图像竖直高度/像素
 const int pixel_size=3;//通道数(RGB为3,RGBA为4)
 const char *file_name="hello.png";//图片名称
 vec3 bitmap_rgb[height][width];//范围为[0,1]
 unsigned char bitmap[height][width*pixel_size];
+
+
 void write_PNG()//输出图像
 {
 	png_structp png_ptr=png_create_write_struct(PNG_LIBPNG_VER_STRING,nullptr,nullptr,nullptr);
@@ -39,18 +46,38 @@ void write_PNG()//输出图像
 	png_destroy_write_struct(&png_ptr,&info_ptr);
 	fclose(f);
 }
+
+vec3 get_color(const ray &sight,const intersect *world)
+{
+	hitpoint rec;
+	if(world->hit(sight,0,INF,rec))//求交点，交点的范围为零到正无穷
+	{
+		vec3 tmp=0.5*(rec.n+vec3(1,1,1));
+		// vec3 tmp(rec.n.x()>0,rec.n.y()>0,rec.n.z()>0);
+		return tmp;
+	}
+	else return vec3(1,1,1);
+}
+
+vector<intersect*>objects;
 int main()
 {
-	camera cam;
+	objects.push_back(new sphere(vec3(3,0,0),0.5));
+	objects.push_back(new sphere(vec3(10,0,0),5));
+
+	world=new intersections(objects.data(),objects.size());
+
 	for(int i=0;i<height;i++)
 	for(int j=0;j<width;j++)
 	{
-		vec3 d=cam.get_ray((vec::real)i/height/*将坐标归一化*/,(vec::real)j/width/*将坐标归一化*/).direction();
-		vec2 f(d.y(),d.z());
-		f=f.normalized();
-		vec3 g(0,(f.x()+1)/2,(f.y()+1)/2);
-		bitmap_rgb[i][j]=g;
+		for(int k=0;k<ssp;k++)
+		{
+			ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
+			bitmap_rgb[i][j]+=get_color(sight,world);
+		}
+		bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)ssp;
 	}
 	write_PNG();
+	system(file_name);
 	return 0;
 }

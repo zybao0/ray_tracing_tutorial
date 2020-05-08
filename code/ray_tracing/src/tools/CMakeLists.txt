@@ -1,0 +1,8 @@
+cmake_minimum_required (VERSION 2.6)
+#include_directories(${PROJECT_SOURCE_DIR}/header)
+#target_link_libraries(tools)
+#SET(CMAKE_CXX_FLAGS "-O2 -std=c++17")
+#SET(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
+#SET(LIBRARY_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/lib")
+AUX_SOURCE_DIRECTORY(. DIR_LIB_SRCS)
+add_library(tools ${DIR_LIB_SRCS})

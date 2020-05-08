@@ -1,0 +1,1 @@
+<img src="https://www.zhihu.com/equation?tex=$1" alt="[公式]" eeimg="1" data-formula="$1">
