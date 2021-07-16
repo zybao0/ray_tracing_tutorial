@@ -6,8 +6,16 @@ const vec::vec3& ray_tracing::ray::origin()const{return origin_;}
 const vec::vec3& ray_tracing::ray::direction()const{return direction_;}
 vec::vec3 ray_tracing::ray::go(const vec::real &t)const{return origin_+direction_*t;}
 
-ray_tracing::ray ray_tracing::camera::get_ray(vec::real u,vec::real v){return ray(vec::vec3(0,0,0),vec::vec3(1,2*v-1,0.5-u));}
-ray_tracing::ray ray_tracing::camera::get_ray(vec::vec2 p){return ray(vec::vec3(0,0,0),vec::vec3(1,2*p.y()-1,0.5-p.x()));}
+ray_tracing::camera::camera(vec::real vfov,vec::real scale,vec::vec3 look_at,vec::vec3 camera_up,vec::vec3 look_from,vec::real dis):look_from_(look_from),look_at_(look_at),f_(dis)
+{
+	camera_z_=(look_from-look_at).normalized();//为了保证右手系，z轴与照相机方向相反
+	camera_x_=camera_up.cross(camera_z_).normalized();
+	camera_y_=camera_z_.cross(camera_x_).normalized();
+	h_=2*f_*tan(vfov/360.*cnum::pi);
+	w_=h_*scale;
+}
+ray_tracing::ray ray_tracing::camera::get_ray(vec::real u,vec::real v){return ray(look_from_,(0.5-v)*w_*camera_x_+(0.5-u)*h_*camera_y_-f_*camera_z_);}
+ray_tracing::ray ray_tracing::camera::get_ray(vec::vec2 p){return ray(look_from_,(0.5-p.y())*w_*camera_x_+(0.5-p.x())*h_*camera_y_-f_*camera_z_);}
 
 ray_tracing::intersections::intersections(ray_tracing::intersect** list,size_t n):list_(list),size_(n){}
 bool ray_tracing::intersections::hit(const ray_tracing::ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const

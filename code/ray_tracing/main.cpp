@@ -12,15 +12,16 @@ using namespace std;
 using namespace vec;
 using namespace cnum;
 using namespace ray_tracing;
-int ssp=50;//每像素采样的点数
-camera cam;//相机
+int spp=50;//每像素采样的点数
 intersect* world;//场景
-const int width=400;//图像水平长度/像素
-const int height=200;//图像竖直高度/像素
+const int width=1600;//图像水平长度/像素
+const int height=900;//图像竖直高度/像素
 const int pixel_size=3;//通道数(RGB为3,RGBA为4)
 const char *file_name="hello.png";//图片名称
 vec3 bitmap_rgb[height][width];//范围为[0,1]
 unsigned char bitmap[height][width*pixel_size];
+
+camera cam(90,(vec::real)width/(vec::real)height);//相机
 
 
 void write_PNG()//输出图像
@@ -70,12 +71,12 @@ int main()
 	for(int i=0;i<height;i++)
 	for(int j=0;j<width;j++)
 	{
-		for(int k=0;k<ssp;k++)
+		for(int k=0;k<spp;k++)
 		{
 			ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
 			bitmap_rgb[i][j]+=get_color(sight,world);
 		}
-		bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)ssp;
+		bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)spp;
 	}
 	write_PNG();
 	system(file_name);

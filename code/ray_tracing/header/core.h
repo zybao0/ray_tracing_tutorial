@@ -23,8 +23,13 @@ namespace ray_tracing
 	class camera
 	{
 		public:
+			camera(vec::real vfov=30,vec::real scale=16./9.,vec::vec3 look_at=vec::vec3(1,0,0),vec::vec3 camera_up=vec::vec3(0,0,1),vec::vec3 look_from=vec::vec3(0,0,0),vec::real dis=1);//vfov:竖直方向视场角(单位:度);scale:胶片长比高;camera_up:照相机坐标中的y轴(向上的轴);dis:焦距			
 			ray get_ray(vec::real u,vec::real v);//传入归一化后的坐标
 			ray get_ray(vec::vec2 p);
+		private:
+			vec::vec3 look_from_,look_at_,camera_x_,camera_y_,camera_z_;//look_from_:照相机位置;look_at_:照相机正对的点的坐标;camera_x_:照相机直播中x轴向量在世界坐标系的值(y,z同理)
+			vec::real f_,h_,w_;//f_:焦距，在针孔照相机中指的是针孔到胶片的距离，默认为一;h_:摄像头胶片高度;w_:摄像头胶片宽度
+
 	};
 
 	struct hitpoint//交点的信息
