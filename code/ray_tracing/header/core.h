@@ -38,10 +38,29 @@ namespace ray_tracing
 		vec::vec3 p,n;//p:相交点、撞击点的坐标;n:p点的表面的法向量(应该为单位向量)
 	};
 
+	class aabb//平行轴包围盒
+	{
+		public:
+			aabb();
+			aabb(const vec::vec3 &a,const vec::vec3 &b);//任意对角坐标
+			aabb(const aabb &a,const aabb &b);//移动的物体
+			void merge(const aabb &a);//将两个包围盒合并成更大的包围盒
+			bool hit(const ray &sight,vec::real tmin,vec::real tmax)const;
+			const vec::vec3& min()const;
+			const vec::vec3& max()const;
+			const vec::real& area()const;
+		private:
+			vec::vec3 min_,max_;//min_(max_):长方体8个顶点中坐标的x,y,z均最小(大)的点
+			vec::real area_;//长方体表面积
+	};
+
 	class intersect//相交类
 	{
 		public:
 			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const=0;//sight:光线;t_min,t_max:交点的距离的最小值与最大值,一般分别设为0和inf;rec交点的信息;返回值为是否相交
+		protected:
+			bool not_optimization_;//有些物体（如无穷大平面）返回aabb没有意义，说以选择不优化(当true是不优化)
+			aabb box_;//物体的包围盒
 	};
 
 	class intersections:public intersect//相交类的指针数组，用于保存场景
