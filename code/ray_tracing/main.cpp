@@ -21,7 +21,7 @@ const char *file_name="hello.png";//图片名称
 vec3 bitmap_rgb[height][width];//范围为[0,1]
 unsigned char bitmap[height][width*pixel_size];
 
-camera cam(90,(vec::real)width/(vec::real)height);//相机
+camera cam(90,(vec::real)width/(vec::real)height,vec3(3,0,0),vec3(0,0,1),vec3(0,0,1));//相机
 
 
 void write_PNG()//输出图像

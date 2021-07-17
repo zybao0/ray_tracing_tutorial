@@ -23,7 +23,7 @@ namespace ray_tracing
 	class camera
 	{
 		public:
-			camera(vec::real vfov=30,vec::real scale=16./9.,vec::vec3 look_at=vec::vec3(1,0,0),vec::vec3 camera_up=vec::vec3(0,0,1),vec::vec3 look_from=vec::vec3(0,0,0),vec::real dis=1);//vfov:竖直方向视场角(单位:度);scale:胶片长比高;camera_up:照相机坐标中的y轴(向上的轴);dis:焦距			
+			camera(const vec::real &vfov=30,const vec::real &scale=16./9.,const vec::vec3 &look_at=vec::vec3(1,0,0),const vec::vec3 &camera_up=vec::vec3(0,0,1),const vec::vec3 &look_from=vec::vec3(0,0,0),const vec::real &dis=1);//vfov:竖直方向视场角(单位:度);scale:胶片长比高;camera_up:照相机坐标中的y轴(向上的轴);dis:焦距			
 			ray get_ray(vec::real u,vec::real v);//传入归一化后的坐标
 			ray get_ray(vec::vec2 p);
 		private:

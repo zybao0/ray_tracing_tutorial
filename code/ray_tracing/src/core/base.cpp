@@ -6,7 +6,7 @@ const vec::vec3& ray_tracing::ray::origin()const{return origin_;}
 const vec::vec3& ray_tracing::ray::direction()const{return direction_;}
 vec::vec3 ray_tracing::ray::go(const vec::real &t)const{return origin_+direction_*t;}
 
-ray_tracing::camera::camera(vec::real vfov,vec::real scale,vec::vec3 look_at,vec::vec3 camera_up,vec::vec3 look_from,vec::real dis):look_from_(look_from),look_at_(look_at),f_(dis)
+ray_tracing::camera::camera(const vec::real &vfov,const vec::real &scale,const vec::vec3 &look_at,const vec::vec3 &camera_up,const vec::vec3 &look_from,const vec::real &dis):look_from_(look_from),look_at_(look_at),f_(dis)
 {
 	camera_z_=(look_from-look_at).normalized();//为了保证右手系，z轴与照相机方向相反
 	camera_x_=camera_up.cross(camera_z_).normalized();
