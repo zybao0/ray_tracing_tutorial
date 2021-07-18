@@ -25,7 +25,7 @@ namespace vec
 
 namespace cnum//const_number
 {
-	const vec::real INF=0x3f3f3f3f;
+	const vec::real INF=1e18;
 	const vec::real eps=1e-9;
 	const vec::real pi=acos(-1);
 };

@@ -58,18 +58,63 @@ namespace ray_tracing
 	{
 		public:
 			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const=0;//sight:光线;t_min,t_max:交点的距离的最小值与最大值,一般分别设为0和inf;rec交点的信息;返回值为是否相交
+			const aabb& get_box()const;
+			const bool not_optimization()const;
 		protected:
 			bool not_optimization_;//有些物体（如无穷大平面）返回aabb没有意义，说以选择不优化(当true是不优化)
 			aabb box_;//物体的包围盒
+		public:
+			bool vis;
 	};
+
+	const size_t AUTO=0;
+	const size_t NONE=1;
+	const size_t BVH =2;
+	const size_t KDTREE=3;//加速方式
 
 	class intersections:public intersect//相交类的指针数组，用于保存场景
 	{
 		public:
-			intersections(intersect** list,size_t n);
+			intersections(intersect** list,size_t n,int acceleration_type=AUTO);
 			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const override;//枚举每一个物体来求最近的交点，chapter 2中的第一段伪代码的实现
 		private:
 			intersect** list_;//一个指针数组 指向每一个实体
-			size_t size_;//物体个数
+			size_t size_,num_,acceleration_;//size_:物体个数;num_:参与加速结构的物体的个数;acceleration_:加速类型
+			intersect *root;//加速结构的根节点
+	};
+
+	const int AXIS_X=0;
+	const int AXIS_Y=1;
+	const int AXIS_Z=2;
+
+	class bvh_node:public intersect//bvh加速结构
+	{
+		public:
+			bvh_node(intersect**world,const int n);
+			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const override;
+		private:
+			intersect *left_,*right_;
+	};
+
+	class KD_tree_node:public intersect//kd-tree加速结构
+	{
+		public:
+			KD_tree_node(intersect**world,const int n,const int depth,aabb bound);
+			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const override;
+		private:
+			bool split;
+			int split_axis_;
+			vec::real split_pos_;
+			intersect *left_,*right_;
+	};
+
+	class KD_tree_leaf:public intersect
+	{
+		public:
+			KD_tree_leaf(intersect **world,const int n,aabb bound);
+			virtual bool hit(const ray &sight,vec::real t_min,vec::real t_max,hitpoint &rec)const override;
+		private:
+			intersect **list_;
+			size_t size_;//叶节点物体数量
 	};
 };

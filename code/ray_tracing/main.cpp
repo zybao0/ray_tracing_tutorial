@@ -1,4 +1,5 @@
 #include<png.h>
+#include<ctime>
 #include<vector>
 #include<cstdio>
 #include<cstdlib>
@@ -14,14 +15,14 @@ using namespace cnum;
 using namespace ray_tracing;
 int spp=50;//每像素采样的点数
 intersect* world;//场景
-const int width=1600;//图像水平长度/像素
-const int height=900;//图像竖直高度/像素
+const int width=320;//图像水平长度/像素
+const int height=180;//图像竖直高度/像素
 const int pixel_size=3;//通道数(RGB为3,RGBA为4)
 const char *file_name="hello.png";//图片名称
 vec3 bitmap_rgb[height][width];//范围为[0,1]
 unsigned char bitmap[height][width*pixel_size];
 
-camera cam(90,(vec::real)width/(vec::real)height,vec3(3,0,0),vec3(0,0,1),vec3(0,0,1));//相机
+camera cam(90,(vec::real)width/(vec::real)height,vec3(0,0,0),vec3(0,0,1),vec3(-6,-6,-6));//相机,参数分别为视角,长宽比,照相机正对的点的坐标,照相机坐标中的y轴,照相机位置,焦距
 
 
 void write_PNG()//输出图像
@@ -63,14 +64,34 @@ vec3 get_color(const ray &sight,const intersect *world)
 vector<intersect*>objects;
 int main()
 {
-	objects.push_back(new sphere(vec3(3,0,0),0.5));
-	objects.push_back(new sphere(vec3(10,0,0),5));
+	clock_t start=clock(),finish;
+	// objects.push_back(new sphere(vec3(3,0,0),0.5));
+	// objects.push_back(new sphere(vec3(10,0,0),5));
+	for(int i=-5;i<=5;i++)
+	for(int j=-5;j<=5;j++)
+	for(int k=-5;k<=5;k++)objects.push_back(new sphere(vec3(i,j,k),0.3));
+	for(int i=0;i<1000;i++)objects.push_back(new sphere(vec3(0,0,0),1000+i));
+	// for(int i=0;i<objects.size();i++)cout<<objects[i]<<" ";
+	// cout<<endl;
 
-	world=new intersections(objects.data(),objects.size());
+	world=new intersections(objects.data(),objects.size(),NONE);
+
+	// int cnt=0;
+	// for(int i=0;i<1331;i++)
+	// {
+	// 	// int cnt=0;
+	// 	cout<<objects[i]->vis<<" ";
+	// 	if(!objects[i]->vis)cnt++;
+	// }
+	// cout<<cnt<<endl;
+
+	cout<<"finish"<<endl;
 
 	for(int i=0;i<height;i++)
 	for(int j=0;j<width;j++)
+	// int i=133,j=82;
 	{
+		// cout<<i<<" "<<j<<endl;
 		for(int k=0;k<spp;k++)
 		{
 			ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
@@ -80,5 +101,8 @@ int main()
 	}
 	write_PNG();
 	system(file_name);
+
+	finish=clock();
+	cout<<"time="<<double(finish-start)/CLOCKS_PER_SEC<<"s"<<endl;
 	return 0;
 }
