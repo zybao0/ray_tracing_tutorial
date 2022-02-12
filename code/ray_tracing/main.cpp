@@ -1,22 +1,32 @@
 #include<png.h>
 #include<ctime>
+#include<mutex>
+#include<thread>
 #include<vector>
 #include<cstdio>
 #include<cstdlib>
 #include<iostream>
 #include<Eigen/Eigen>
 #include<Eigen/Dense>
+// #include <GLFW\glfw3.h>
 
 #include<ray_tracing.h>
 using namespace Eigen;
 using namespace std;
 using namespace vec;
 using namespace cnum;
+using namespace my_thread_pool;
 using namespace ray_tracing;
 int spp=50;//每像素采样的点数
 intersect* world;//场景
 const int width=320;//图像水平长度/像素
 const int height=180;//图像竖直高度/像素
+//将图像分块,每个线程每次处理一块
+const int thread_num=20;
+const int tile_w=16;//块的水平长度/像素
+const int tile_h=16;//块的竖直高度/像素
+// const int tile_w_num=(width-1)/tile_w;//块在竖直方向的个数(减一是因为从0开始计算)
+// const int tile_h_num=(height-1)/tile_h;//块在水平方向的个数(减一是因为从0开始计算)
 const int pixel_size=3;//通道数(RGB为3,RGBA为4)
 const char *file_name="hello.png";//图片名称
 vec3 bitmap_rgb[height][width];//范围为[0,1]
@@ -60,7 +70,21 @@ vec3 get_color(const ray &sight,const intersect *world)
 	}
 	else return vec3(1,1,1);
 }
+void render(int x1,int y1,int x2,int y2)//渲染范围为[x1,x2),[y1,y2)的像素
+{
+	// printf("hello%d %d %d %d %d\n",x1,y1,x2,y2,std::this_thread::get_id());
+	for(int i=x1;i<x2;i++)
+	for(int j=y1;j<y2;j++)
+	{
+		for(int k=0;k<spp;k++)
+		{
+			ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
+			bitmap_rgb[i][j]+=get_color(sight,world);
+		}
+		bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)spp;
+	}
 
+}
 vector<intersect*>objects;
 int main()
 {
@@ -76,6 +100,9 @@ int main()
 
 	world=new intersections(objects.data(),objects.size(),NONE);
 
+	thread_pool<int,int,int,int> my_thread_pool_(thread_num,render);
+	for(int i=0;i<height;i+=tile_h)
+	for(int j=0;j<width;j+=tile_w)my_thread_pool_.push_task(i,j,min(i+tile_h,height),min(j+tile_w,width));
 	// int cnt=0;
 	// for(int i=0;i<1331;i++)
 	// {
@@ -84,21 +111,25 @@ int main()
 	// 	if(!objects[i]->vis)cnt++;
 	// }
 	// cout<<cnt<<endl;
-
+	mutex mx;
+	unique_lock<mutex> lk(mx);
+	while(!my_thread_pool_.queue_empty())my_thread_pool_.queue_empty_msg.wait(lk);
+	lk.unlock();
 	cout<<"finish"<<endl;
 
-	for(int i=0;i<height;i++)
-	for(int j=0;j<width;j++)
-	// int i=133,j=82;
-	{
-		// cout<<i<<" "<<j<<endl;
-		for(int k=0;k<spp;k++)
-		{
-			ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
-			bitmap_rgb[i][j]+=get_color(sight,world);
-		}
-		bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)spp;
-	}
+	// for(int i=0;i<height;i++)
+	// for(int j=0;j<width;j++)
+	// // int i=133,j=82;
+	// {
+	// 	// cout<<i<<" "<<j<<endl;
+	// 	for(int k=0;k<spp;k++)
+	// 	{
+	// 		ray sight=cam.get_ray((vec::real)(i+rnd::rand())/height/*将坐标归一化*/,(vec::real)(j+rnd::rand())/width/*将坐标归一化*/);
+	// 		bitmap_rgb[i][j]+=get_color(sight,world);
+	// 	}
+	// 	bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)spp;
+	// }
+
 	write_PNG();
 	system(file_name);
 
