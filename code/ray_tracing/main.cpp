@@ -4,6 +4,7 @@
 #include<thread>
 #include<vector>
 #include<cstdio>
+#include<chrono>
 #include<cstdlib>
 #include<iostream>
 #include<Eigen/Eigen>
@@ -15,6 +16,7 @@ using namespace Eigen;
 using namespace std;
 using namespace vec;
 using namespace cnum;
+using namespace chrono;
 using namespace my_thread_pool;
 using namespace ray_tracing;
 int spp=50;//每像素采样的点数
@@ -22,7 +24,7 @@ intersect* world;//场景
 const int width=320;//图像水平长度/像素
 const int height=180;//图像竖直高度/像素
 //将图像分块,每个线程每次处理一块
-const int thread_num=20;
+const int thread_num=40;
 const int tile_w=16;//块的水平长度/像素
 const int tile_h=16;//块的竖直高度/像素
 // const int tile_w_num=(width-1)/tile_w;//块在竖直方向的个数(减一是因为从0开始计算)
@@ -88,7 +90,8 @@ void render(int x1,int y1,int x2,int y2)//渲染范围为[x1,x2),[y1,y2)的像�
 vector<intersect*>objects;
 int main()
 {
-	clock_t start=clock(),finish;
+	steady_clock::time_point start=steady_clock::now();
+
 	// objects.push_back(new sphere(vec3(3,0,0),0.5));
 	// objects.push_back(new sphere(vec3(10,0,0),5));
 	for(int i=-5;i<=5;i++)
@@ -98,7 +101,7 @@ int main()
 	// for(int i=0;i<objects.size();i++)cout<<objects[i]<<" ";
 	// cout<<endl;
 
-	world=new intersections(objects.data(),objects.size(),NONE);
+	world=new intersections(objects.data(),objects.size(),KDTREE);
 
 	thread_pool<int,int,int,int> my_thread_pool_(thread_num,render);
 	for(int i=0;i<height;i+=tile_h)
@@ -131,9 +134,9 @@ int main()
 	// }
 
 	write_PNG();
-	system(file_name);
-
-	finish=clock();
-	cout<<"time="<<double(finish-start)/CLOCKS_PER_SEC<<"s"<<endl;
+	// system(file_name);
+	steady_clock::time_point finish=steady_clock::now();
+	duration<double>time_span=duration_cast<duration<double>>(finish-start);
+	cout<<time_span.count()<<" seconds.";
 	return 0;
 }

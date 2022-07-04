@@ -1,0 +1,3 @@
+[submodule "code/ray_tracing/third_party/eigen"]
+	path = code/ray_tracing/third_party/eigen
+	url = https://gitlab.com/libeigen/eigen.git
