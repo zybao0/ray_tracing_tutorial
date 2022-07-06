@@ -1,6 +1,7 @@
 #include<png.h>
 #include<ctime>
 #include<mutex>
+#include<cmath>
 #include<thread>
 #include<vector>
 #include<cstdio>
@@ -88,10 +89,8 @@ void render(int x1,int y1,int x2,int y2)//渲染范围为[x1,x2),[y1,y2)的像�
 
 }
 vector<intersect*>objects;
-int main()
+void start_rendering()
 {
-	steady_clock::time_point start=steady_clock::now();
-
 	// objects.push_back(new sphere(vec3(3,0,0),0.5));
 	// objects.push_back(new sphere(vec3(10,0,0),5));
 	for(int i=-5;i<=5;i++)
@@ -103,9 +102,12 @@ int main()
 
 	world=new intersections(objects.data(),objects.size(),KDTREE);
 
-	thread_pool<int,int,int,int> my_thread_pool_(thread_num,render);
+	thread_pool my_thread_pool_(thread_num);
+	multi_tasks tasks;
 	for(int i=0;i<height;i+=tile_h)
-	for(int j=0;j<width;j+=tile_w)my_thread_pool_.push_task(i,j,min(i+tile_h,height),min(j+tile_w,width));
+	for(int j=0;j<width;j+=tile_w)tasks.push(render,i,j,min(i+tile_h,height),min(j+tile_w,width));
+
+	my_thread_pool_.push(std::move(tasks));
 	// int cnt=0;
 	// for(int i=0;i<1331;i++)
 	// {
@@ -114,11 +116,7 @@ int main()
 	// 	if(!objects[i]->vis)cnt++;
 	// }
 	// cout<<cnt<<endl;
-	mutex mx;
-	unique_lock<mutex> lk(mx);
-	while(!my_thread_pool_.queue_empty())my_thread_pool_.queue_empty_msg.wait(lk);
-	lk.unlock();
-	cout<<"finish"<<endl;
+
 
 	// for(int i=0;i<height;i++)
 	// for(int j=0;j<width;j++)
@@ -132,7 +130,11 @@ int main()
 	// 	}
 	// 	bitmap_rgb[i][j]=bitmap_rgb[i][j]/(vec::real)spp;
 	// }
-
+}
+int main()
+{
+	steady_clock::time_point start=steady_clock::now();
+	start_rendering();
 	write_PNG();
 	// system(file_name);
 	steady_clock::time_point finish=steady_clock::now();
